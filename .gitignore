@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.csv
+venv/
+.env
+relatorio_estoque.xlsx
