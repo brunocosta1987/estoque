@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd
 import os
 from io import BytesIO
+import locale
+
+# Define a localidade para formato brasileiro de moeda
+locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 ARQUIVO_ESTOQUE = 'estoque.csv'
 
@@ -15,7 +19,7 @@ def salvar_dados(df):
     df.to_csv(ARQUIVO_ESTOQUE, index=False)
 
 def registrar_entrada(df):
-    st.subheader("📥 Entrada de Itens")
+    st.subheader("\ud83d\udce5 Entrada de Itens")
     item = st.text_input("Nome do item")
     quantidade = st.number_input("Quantidade", min_value=1, step=1)
     valor_unitario = st.number_input("Valor unitário (R$)", min_value=0.0, format="%.2f")
@@ -34,7 +38,7 @@ def registrar_entrada(df):
     return df
 
 def registrar_saida(df):
-    st.subheader("📤 Saída de Itens")
+    st.subheader("\ud83d\udce4 Saída de Itens")
     itens = df["Item"].tolist()
     if not itens:
         st.warning("Nenhum item cadastrado.")
@@ -61,12 +65,21 @@ def gerar_excel(df):
     output.seek(0)
     return output
 
+def formatar_moeda(valor):
+    try:
+        return locale.currency(valor, grouping=True)
+    except:
+        return f"R$ {valor:,.2f}"
+
 def exibir_relatorio(df):
-    st.subheader("📊 Relatório de Saldo")
+    st.subheader("\ud83d\udcca Relatório de Saldo")
     if df.empty:
         st.info("Nenhum item cadastrado ainda.")
     else:
-        st.dataframe(df)
+        df_exibicao = df.copy()
+        df_exibicao["Valor_Unitário"] = df_exibicao["Valor_Unitário"].apply(formatar_moeda)
+        df_exibicao["Valor_Total"] = df_exibicao["Valor_Total"].apply(formatar_moeda)
+        st.dataframe(df_exibicao)
         excel_data = gerar_excel(df)
         st.download_button(
             label="⬇️ Baixar Relatório em Excel",
@@ -76,7 +89,7 @@ def exibir_relatorio(df):
         )
 
 def main():
-    st.title("📦 Sistema de Estoque Logístico")
+    st.title("\ud83d\udce6 Sistema de Estoque Logístico")
     menu = st.sidebar.radio("Menu", ["Registrar Entrada", "Registrar Saída", "Relatório de Saldo"])
     df = carregar_dados()
 
